@@ -4,7 +4,7 @@
 Author          : Kanya Anindya 
 Project         : Causal treatment effects on survival and complications
 Email           : kanyaanin@gmail.com
-Version         : v01, 20-Feb-2026
+Version         : v01, 21-Feb-2026
 ------------------------------------------------------------------------
 Data cleaning and management
 ----------------------------------------------------------------------*/
@@ -25,6 +25,7 @@ global excel 		 "${project}03. Excel/"
 global result 		 "${project}04. Result/"
 global logfile 		 "${project}05. Log/"
 global temp 		 "${project}06. Temp/"
+global figure 		 "${project}07. Figure/"
 
 log using "${logfile} KI Work test_($S_DATE).log", replace 
 display "This log file was created on $S_DATE $S_TIME"

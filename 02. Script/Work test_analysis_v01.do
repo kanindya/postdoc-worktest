@@ -4,7 +4,7 @@
 Author          : Kanya Anindya 
 Project         : Causal treatment effects on survival and complications
 Email           : kanyaanin@gmail.com
-Version         : v01, 20-Feb-2026
+Version         : v01, 21-Feb-2026
 ------------------------------------------------------------------------
 Data analysis
 ----------------------------------------------------------------------*/
@@ -25,6 +25,7 @@ global excel 		 "${project}03. Excel/"
 global result 		 "${project}04. Result/"
 global logfile 		 "${project}05. Log/"
 global temp 		 "${project}06. Temp/"
+global figure 		 "${project}07. Figure/"
 
 log using "${logfile} KI Work test_analysis_($S_DATE).log", replace 
 display "This log file was created on $S_DATE $S_TIME"
@@ -65,7 +66,7 @@ display "This log file was created on $S_DATE $S_TIME"
 
 **# OUTCOME 1: Overall survival
 	* Stset
-	stset uppfoljningstid, failure(dod==1) id(ID) scale(365.25)
+	stset uppfoljningstid, failure(dod==1) id(ID) scale(30.4375)
 	
 	**# 1.1 KM curve
 	sts test behandlingsgrupp1
@@ -73,12 +74,12 @@ display "This log file was created on $S_DATE $S_TIME"
 	* Overall KM by treatment
 	qui sts graph, by(behandlingsgrupp1) ///
 		title("Overall survival by treatment group") ///
-		xtitle("Years since diagnosis") ytitle("Survival probability") ///
+		xtitle("Months of follow-up") ytitle("Survival probability") ///
 		risktable(, order(1 "Obehandlad" 2 "Behandlad")) ///
 		legend(order(1 "Obehandlad" 2 "Behandlad") ring(0) pos(5)) ///
 		name(km_overall, replace)
 
-	graph export "${result}km_os_overall.png", replace width(2400)
+	graph export "${figure}km_os_overall.png", replace width(2400)
 
 	* KM by treatment within each risk group
 	forvalues r = 0/2 {
@@ -87,55 +88,19 @@ display "This log file was created on $S_DATE $S_TIME"
 
 			qui sts graph, by(behandlingsgrupp1) ///
 				title("Overall survival by treatment, risk group: `r'") ///
-				xtitle("Years since diagnosis") ytitle("Survival probability") ///
+				xtitle("Months of follow-up") ytitle("Survival probability") ///
 				risktable(, order(1 "Obehandlad" 2 "Behandlad")) ///
 				legend(order(1 "Obehandlad" 2 "Behandlad") ring(0) pos(5)) ///
 				name(km_r`r', replace)
 
-			graph export "${result}km_os_risk`r'.png", replace width(2400)
+			graph export "${figure}km_os_risk`r'.png", replace width(2400)
 		restore
 	}
-	
-	{
-	** Additional analysis: export KM number to excel
-		* stset
-		stset uppfoljningstid, failure(dod==1) id(ID) scale(365.25)
-
-		* Save KM estimates by treatment
-		sts list, by(behandlingsgrupp1) ///
-			saving("${temp}km_overall.dta", replace)
-			
-		* Overall
-		preserve 
-			use "${temp}km_overall.dta", clear
-			gen riskgrupp = .
-			tempfile km_all
-			save `km_all', replace
-		restore
-
-		* Loop over risk groups
-		forvalues r = 0/2 {
-			preserve
-				keep if riskgrupp == `r'
-				sts list, by(behandlingsgrupp1) ///
-					saving("${temp}km_r`r'.dta", replace)
-				* Append
-				use "${temp}km_r`r'.dta", clear
-				gen riskgrupp = `r'
-				append using `km_all'
-				save `km_all', replace	
-			restore
-		}
 		
-		use `km_all', clear
-		sort riskgrupp
-		export excel using "${excel}/worktest_km_v01.xls", firstrow(variables) replace
-	}
-	
 	**# 2.1 Cox
 	* Compare linear vs flexible models
 	use "${result}worktest_v01.dta", clear
-	stset uppfoljningstid, failure(dod==1) id(ID) scale(365.25)
+	stset uppfoljningstid, failure(dod==1) id(ID) scale(30.4375)
 	
 	stcox i.behandlingsgrupp1 c.alder1 i.kon1 i.T_grupp1 c.ht c.crp
 	
@@ -157,69 +122,12 @@ display "This log file was created on $S_DATE $S_TIME"
 	estat phtest, detail
 	
 **# OUTCOME 2: Complication-free
-	**# 2.1 KM curve
-	stset cr_time, failure(failtype==1) id(ID) scale(365.25)
-	sts test behandlingsgrupp1
-	
-	qui sts graph, by(behandlingsgrupp1) ///
-		title("Complication free survival by treatment group") ///
-		xtitle("Years since diagnosis") ytitle("Complication free survival") ///
-		risktable(, order(1 "Obehandlad" 2 "Behandlad")) ///
-		legend(order(1 "Obehandlad" 2 "Behandlad") ring(0) pos(5)) ///
-		name(km_cfs, replace)
-	graph export "${result}km_cfs_overall.png", replace width(2400)
-	
-	{
-		** Additional analysis: export KM number to excel
-		* stset
-		stset cr_time, failure(failtype==1) id(ID) scale(365.25)
-
-		* Save KM estimates by treatment
-		sts list, by(behandlingsgrupp1) ///
-			saving("${temp}km_cfs_overall.dta", replace)
-			
-		* Overall
-		preserve 
-			use "${temp}km_cfs_overall.dta", clear
-			gen riskgrupp = .
-			tempfile km_cfs_all
-			save `km_cfs_all', replace
-		restore
-
-		* Loop over risk groups
-		forvalues r = 0/2 {
-			preserve
-				keep if riskgrupp == `r'
-				sts list, by(behandlingsgrupp1) ///
-					saving("${temp}km_cfs_r`r'.dta", replace)
-				* Append
-				use "${temp}km_cfs_r`r'.dta", clear
-				gen riskgrupp = `r'
-				append using `km_cfs_all'
-				save `km_cfs_all', replace	
-			restore
-		}
-		
-		use `km_cfs_all', clear
-		sort riskgrupp
-		export excel using "${excel}/worktest_km_cfs_v01.xlsx", firstrow(variables) replace
-	}
-	
-	* Compare linear vs flexible models	
-	use "${result}worktest_v01.dta", clear
-	stset cr_time, failure(failtype==1) id(ID) scale(365.25)
-	stcox i.behandlingsgrupp1 c.alder1 i.kon1 i.T_grupp1 c.ht c.crp
-	cap drop mart
-	predict mart, mgale
-	lowess mart alder1
-	lowess mart ht
-	lowess mart crp
-	
 	**# 2.2 Cox
-	mkspline age_s = alder1, cubic nknots(4)
-	stcox i.behandlingsgrupp1 age_s* i.kon1 i.T_grupp1 c.ht c.crp
-		
+	use "${result}worktest_v01.dta", clear
+	stset cr_time, failure(failtype==1) id(ID) scale(30.4375)
+
 	* Cause specific Cox for complication with spline age
+	mkspline age_s = alder1, cubic nknots(4)
 	stcox i.behandlingsgrupp1 age_s* i.kon1 i.T_grupp1 c.ht c.crp
 	estimates store comp_cs_spline
 	estat phtest, detail
@@ -227,6 +135,16 @@ display "This log file was created on $S_DATE $S_TIME"
 	* Competing risks Fine and Gray for complication with death as competing event
 	stcrreg i.behandlingsgrupp1 age_s* i.kon1 i.T_grupp1 c.ht c.crp, compete(failtype==2)
 	estimates store comp_fg_spline
+	
+	* Model-based CIF curves at treatment levels (adjusted)
+	stcurve, cif ///
+		at1(behandlingsgrupp1=0) ///
+		at2(behandlingsgrupp1=1) ///
+		title("Cumulative incidence of complications by treatment group") ///
+		xtitle("Months of follow-up") ///
+		ytitle("Cumulative incidence of complication") ///
+		legend(order(1 "Obehandlad" 2 "Behandlad") ring(0) pos(5)) ///
+		name(cif_comp_fg_overall, replace) 
 	
 /***********************************
 
@@ -272,15 +190,16 @@ display "This log file was created on $S_DATE $S_TIME"
 		mkspline age_s = alder1, cubic nknots(4)
 		stcox i.behandlingsgrupp1 age_s* i.kon1 i.T_grupp1 c.ht c.crp
 		
-	**# OUTCOME 2: Overall survival, IPTW
-		* Stcox with spline age model
-		stset cr_time [pweight=sw_tr], failure(failtype==1) id(ID) scale(365.25)
+	**# OUTCOME 2: Complications-free, IPTW
+		* FG with spline age model, death as competing risk
+		stset cr_time [pweight=sw_tr], failure(failtype==1) id(ID) scale(30.4375)
 		stcrreg i.behandlingsgrupp1 age_s* i.kon1 i.T_grupp1 c.ht c.crp, compete(failtype==2)
 		
 	
 **# Sensivity analysis 2: Effect moderation of risk group
 	use "${result}worktest_v01.dta", clear
 	
+	notes: age and tumour were excluded since risk group were included in the model
 	**# OUTCOME 1: Overall survival, effect modration
 		* Stcox with spline age model
 		stset uppfoljningstid, failure(dod==1)
@@ -289,8 +208,8 @@ display "This log file was created on $S_DATE $S_TIME"
 		stcox i.behandlingsgrupp1##i.riskgrupp i.kon1 c.ht c.crp
 		
 	**# OUTCOME 2: Overall survival, effect modration
-		* Stcox with spline age model
-		stset cr_time, failure(failtype==1) id(ID) scale(365.25)
+		* FG with spline age model, death as competing risk
+		stset cr_time, failure(failtype==1) id(ID) scale(30.4375)
 		stcrreg i.behandlingsgrupp1##i.riskgrupp i.kon1 c.ht c.crp, compete(failtype==2)
 		
 	
