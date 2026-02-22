@@ -1,4 +1,4 @@
-# Project Directory: KI Work Test - Cancer treatment
+# Project directory: KI Work Test - cancer treatment
 
 This repository/folder contains the data, scripts, and results for the KI work test analysis. To ensure reproducibility, the project is structured into distinct subdirectories.
 
