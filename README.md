@@ -1,6 +1,6 @@
 # Project directory: KI Work Test - cancer treatment
 
-This repository/folder contains the data, scripts, and results for the KI work test analysis. To ensure reproducibility, the project is structured into distinct subdirectories.
+This repository/folder contains the data, scripts, and results for the work test analysis. To ensure reproducibility, the project is structured into distinct subdirectories.
 
 ### ⚠️ Note on Data Availability
 **The raw datasets and processed results are not publicly available.**
