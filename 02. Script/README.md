@@ -24,6 +24,6 @@ This directory contains the reproducible code used to process raw data, perform 
 To ensure reproducibility, please execute the scripts in the following sequence:
 1. `Work test_v01.do` (Generates the cleaned `.dta` result file).
 2. `Work test_analysis_v01.do` (Produces statistical logs and modeling results).
-3. `Work test_figure_v01.R` (Exports the final combined high-resolution figure).
+3. `Work test_figure_v01.R` (Exports the figure).
 
 ---
