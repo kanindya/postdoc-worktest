@@ -122,7 +122,7 @@ display "This log file was created on $S_DATE $S_TIME"
 	estat phtest, detail
 	
 **# OUTCOME 2: Complication-free
-	**# 2.2 Cox
+	**# 2.1 Cox
 	use "${result}worktest_v01.dta", clear
 	stset cr_time, failure(failtype==1) id(ID) scale(30.4375)
 
@@ -132,7 +132,7 @@ display "This log file was created on $S_DATE $S_TIME"
 	estimates store comp_cs_spline
 	estat phtest, detail
 	
-	* Competing risks Fine and Gray for complication with death as competing event
+	**# 2.1 Competing risks Fine and Gray (death as competing event)
 	stcrreg i.behandlingsgrupp1 age_s* i.kon1 i.T_grupp1 c.ht c.crp, compete(failtype==2)
 	estimates store comp_fg_spline
 	
