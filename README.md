@@ -2,10 +2,10 @@
 
 This repository/folder contains the data, scripts, and results for the work test analysis. To ensure reproducibility, the project is structured into distinct subdirectories.
 
-### ⚠️ Note on Data Availability
+### ⚠️ Note on data availability
 **The raw datasets and processed results are not publicly available.**
 
-## 📂 Folder Structure
+## 📂 Folder structure
 
 Below is an overview of the directory structure used in this project:
 
@@ -17,7 +17,7 @@ Work test/
 ├── 03. Excel/         # Exported Excel files (e.g., descriptive tables, results)
 ├── 04. Result/        # Processed/cleaned datasets (e.g., .dta files ready for analysis)
 ├── 05. Log/           # Stata log files capturing the output of the do-files
-└── 06. Temp/          # Temporary files generated during the analysis process
+├── 06. Temp/          # Temporary files generated during the analysis process
 └── 07. Figure/        # Exported figures
 
 
